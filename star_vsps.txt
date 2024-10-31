@@ -1,0 +1,319 @@
+Shader hash 11b5b59e-f8e4267e-bd2083a3-4f344e63
+
+vs_4_0
+      dcl_constantbuffer cb0[21] (PerViewConstantBuffer_t), immediateIndexed
+      dcl_input v0.xy
+      dcl_input v1.xy
+      dcl_output o0.xy
+      dcl_output o0.zw
+      dcl_output o1.xyz
+      dcl_output_siv o2.xyzw, position
+      dcl_temps 1
+   0: mov o0.xy, v1.xyxx
+   1: mad o0.zw, v0.xxxy, l(0.0000, 0.0000, 0.5000, 0.5000), l(0.0000, 0.0000, 0.5000, 0.5000)
+   2: mul r0.xyzw, v0.yyyy, g_matProjectionToWorld[1].xyzw
+   3: mad r0.xyzw, g_matProjectionToWorld[0].xyzw, v0.xxxx, r0.xyzw
+   4: add r0.xyzw, r0.xyzw, g_matProjectionToWorld[2].xyzw
+   5: add r0.xyzw, r0.xyzw, g_matProjectionToWorld[3].xyzw
+   6: div r0.xyz, r0.xyzx, r0.wwww
+   7: add r0.xyz, r0.xyzx, -g_vCameraPositionWs.xyzx
+   8: dp3 r0.w, r0.xyzx, r0.xyzx
+   9: rsq r0.w, r0.w
+  10: mul r0.xyz, r0.wwww, r0.xyzx
+  11: dp3 r0.w, g_vCameraDirWs.xyzx, r0.xyzx
+  12: div r0.w, l(1.0000, 1.0000, 1.0000, 1.0000), r0.w
+  13: mul o1.xyz, r0.wwww, r0.xyzx
+  14: mov o2.xy, v0.xyxx
+  15: mov o2.zw, l(0.0000, 0.0000, 0.0000, 1.0000)
+  16: ret
+
+
+Shader hash f1007692-58583d9c-be66852f-f67148a7
+
+Near = 7, Far = 4800, g_flTime = 374.3668212890625
+
+ps_4_0
+      dcl_constantbuffer cb0[9], immediateIndexed
+      dcl_constantbuffer cb1[26], immediateIndexed
+      dcl_constantbuffer cb2[12], immediateIndexed
+      dcl_sampler s0, mode_default
+      dcl_sampler s1, mode_default
+      dcl_sampler s2, mode_default
+      dcl_sampler s3, mode_default
+      dcl_sampler s4, mode_default
+      dcl_sampler s5, mode_default
+      dcl_resource_texture2d (float,float,float,float) t0
+      dcl_resource_texture2d (float,float,float,float) t1
+      dcl_resource_texture2d (float,float,float,float) t2
+      dcl_resource_texture2d (float,float,float,float) t3
+      dcl_resource_texture2d (float,float,float,float) t4
+      dcl_resource_texture2d (float,float,float,float) t5
+      dcl_resource_texture2d (float,float,float,float) t6
+      dcl_input_ps linear v0.xy
+      dcl_input_ps linear v1.xyz
+      dcl_output o0.xyzw
+      dcl_temps 10
+   0: mul r0.x, cb0[5].z = 1, cb1[21].w = 374.3668212890625(g_flTime)
+   1: mul r1.xyzw, r0.xxxx, l(-2.0000, -2.1000, -1.6000, 1.5000)
+   2: mul r0.xy, r0.xxxx, l(2.1000, 2.6000, 0.0000, 0.0000)
+   
+   // r0.z是线性化深度到[0, Far]？
+   3: sample_l r2.xyzw, v0.xyxx, t1.xyzw, s0, l(0)
+   4: mad r0.z, cb1[22].y = 4793, r2.x, cb1[22].z = -4800
+   5: div r0.z, cb1[22].x = 33600, r0.z
+   6: add r0.w, cb1[23].x = 4800, cb1[23].x
+   7: min r0.z, r0.w, -r0.z
+   
+   // r2.xzyw是世界空间Pos xyzx
+   // v1.xyz是深度为1时的世界空间相对相机位置？（看过忘了）
+   8: mad r2.xyzw, v1.xzyx, r0.zzzz, cb1[19].xzyx // cb1_v19 -87.018569946289063, -344.19488525390625, 1142.528076171875, 0.00 xyz = g_vCameraPositionWs
+   
+	 // r0.z是到Far的距离负数
+   9: add r0.z, r0.z, -cb1[23].x(Far)
+   
+   
+  10: mad r1.xyzw, r2.xyzw, l(0.0214, 0.0230, 0.0246, 0.0952), r1.xyzw
+	// r1.xzyw = 世界空间xyzx*(0.0214,0.0246,0.0230,0.0952) + (-2.0000,-1.6000,-2.1000,1.5000)*g_flTime
+  11: mul r3.xyz, r1.yyyy, l(1.0000, 0.7500, 1.2500, 0.0000)
+  12: sincos r3.xyz, null, r3.xyzx
+  13: mul r3.xyz, r3.xyzx, l(0.1000, 0.1000, 0.1000, 0.0000) // r3.xyz = 0.1*sin((1.0000, 0.7500, 1.2500)*(世界空间z*0.0230-2.1000*g_flTime))
+  14: mul r4.xyz, r1.xxxx, l(1.0000, 0.7500, 1.2500, 0.0000)
+  15: sincos r4.xyz, null, r4.xyzx
+  16: mad r3.xyz, r4.xyzx, l(0.1000, 0.1000, 0.1000, 0.0000) // r3.xyz += 0.1*sin((1.0000, 0.7500, 1.2500)*(世界空间x*0.0214-2.0000*g_flTime))
+  17: mul r1.xyz, r1.zzzz, l(1.0000, 0.7500, 1.2500, 0.0000)
+  18: mul r4.xyz, r1.wwww, l(1.0000, 0.7500, 1.2500, 0.0000)
+  19: sincos r4.xyz, null, r4.xyzx // r4.xyz = sin((1.0000, 0.7500, 1.2500) * (世界空间x*0.0952 + 1.5 *g_flTime))
+  20: sincos r1.xyz, null, r1.xyzx // r1.xyz = sin((1.0000, 0.7500, 1.2500) * (世界空间y*0.0246 - 1.6 *g_flTime))
+  21: mad r1.xyz, r1.xyzx, l(0.1000, 0.1000, 0.1000, 0.0000), r3.xyzx
+  22: mad r1.xyz, r4.xyzx, l(0.0400, 0.0400, 0.0400, 0.0000), r1.xyzx
+  // r1.xyz = 0.1*sin((1.0000, 0.7500, 1.2500)*(世界空间z*0.0230-2.1*g_flTime))
+  + 0.1*sin((1.0000, 0.7500, 1.2500)*(世界空间x*0.0214-2.0*g_flTime))
+  + 0.1*sin((1.0000, 0.7500, 1.2500) * (世界空间y*0.0246 - 1.6 *g_flTime))
+  + 0.04*sin((1.0000, 0.7500, 1.2500) * (世界空间x*0.0952 + 1.5 *g_flTime))
+  
+  23: mad r0.xy, r2.yzyy, l(0.1021, 0.1062, 0.0000, 0.0000), r0.xyxx // r0.xy = 世界空间zy*(0.1021, 0.1062)+(2.1000, 2.6000)*g_time
+  24: mul r3.xyz, r0.xxxx, l(1.0000, 0.7500, 1.2500, 0.0000)
+  25: mul r0.xyw, r0.yyyy, l(1.0000, 0.7500, 0.0000, 1.2500)
+  26: sincos r0.xyw, null, r0.xyxw
+  27: sincos r3.xyz, null, r3.xyzx
+  28: mad r1.xyz, r3.xyzx, l(0.0400, 0.0400, 0.0400, 0.0000), r1.xyzx // r1.xyz += 0.04*sin((1.0000, 0.7500, 1.2500)*(世界空间z*0.1021+2.1000*g_time))
+  29: mad r0.xyw, r0.xyxw, l(0.0400, 0.0400, 0.0000, 0.0400), r1.xyxz
+  // r0.xyw
+  = 0.1*sin((1.0000, 0.7500, 1.2500)*(世界空间z*0.0230-2.1*g_flTime))
+  + 0.1*sin((1.0000, 0.7500, 1.2500)*(世界空间x*0.0214-2.0*g_flTime))
+  + 0.1*sin((1.0000, 0.7500, 1.2500)*(世界空间y*0.0246-1.6*g_flTime))
+  + 0.04*sin((1.0000, 0.7500, 1.2500)*(世界空间x*0.0952+1.5*g_flTime))
+  + 0.04*sin((1.0000, 0.7500, 1.2500)*(世界空间z*0.1021+2.1*g_fltime))
+  + 0.04*sin((1.0000, 0.7500, 1.2500)*(世界空间y*0.1062+2.6*g_fltime))
+  
+  30: mad r1.xyzw, r2.wzwz, cb2[10].zwzw, cb2[10].xyxy // cb2_v10 0.50, 0.50, 0.000139508934808, 0.000139508934808 
+  // 0.000139508934808 = 1 / 7168
+  // r1.xyzw = 世界xyxy*0.0001395 + 0.5
+  31: mad r3.xyzw, cb2[11].xyzw, cb0[7].yyyy, r1.zwzw // 0.001953125 = (1/256)/2，256为战雾mask大小
+  // cb0_v7 90, 2, 0.9, 0.55  cb2_v11 0.001953125, 0.001953125, -0.001953125, 0.001953125
+  // r3.xyzw = (0.001953125, 0.001953125, -0.001953125, 0.001953125)*2+世界xyxy*0.0001395 + 0.5
+
+  32: mad r1.xyzw, -cb2[11].xyzw, cb0[7].yyyy, r1.xyzw // r1.xyzw = -(0.001953125, 0.001953125, -0.001953125, 0.001953125)*2+世界xyxy*0.0001395 + 0.5
+  33: sample_indexable r4.xyzw, r3.xyxx, t0.xyzw, s1
+  34: sample_indexable r3.xyzw, r3.zwzz, t0.xyzw, s1
+  35: add r3.xy, r3.xzxx, r4.xzxx
+  36: sample_indexable r4.xyzw, r1.xyxx, t0.xyzw, s1
+  37: sample_indexable r1.xyzw, r1.zwzz, t0.xyzw, s1
+  38: add r1.yw, r3.xxxy, r4.xxxz
+  39: add r1.xy, r1.xzxx, r1.ywyy // r1.xy = 四次采样战雾mask rb和 // 战雾r 中间1外边0
+  40: mad r1.z, -r1.x, l(0.2500), l(1.0000) // r1.z = 1-战雾权重
+  41: add r1.w, -r1.z, l(1.0000) // r1.w = 战雾权重
+  
+  42: add r2.x, r2.y, -cb0[8].x // cb0_v8 = -250, 450, 0, 0
+
+  43: add r2.x, r2.x, cb0[8].y
+  44: div_sat r2.x, r2.x, cb0[8].y // r2.x = saturate((世界z - (-250)+450)/450); -650->0 -250->1
+  45: mul r3.x, r2.x, r2.x // r3.x = saturate((世界z - (-250)+450)/450)^2
+  46: mad r2.x, -r2.x, r2.x, l(1.0000) // 1-r2.x^2
+  47: sample_indexable r4.xyzw, v0.xyxx, t4.xyzw, s3 // r4 = blur图
+  48: sample_indexable r5.xyzw, v0.xyxx, t3.xyzw, s2 // r5 = 场景颜色
+  49: add r3.yzw, r4.xxyz, r5.xxyz // r3.yzw = 场景颜色 + blur图
+  50: dp3 r4.x, r5.xyzx, l(0.2125, 0.7154, 0.0721, 0.0000) // r4.x = 场景色的luminance
+  51: mul r4.yzw, r3.xxxx, r3.yyzw // r4.yzw = 高度雾？*（场景颜色 + blur图）
+  52: mul r5.xyz, r4.yzwy, l(-0.0200, -0.0200, -0.0200, 0.0000)
+  53: mad r0.xyw, r0.xyxw, r1.wwww, r5.xyxz // r0.xyw=原扰动sin*战雾权重-0.02*颜色 // 为社么要加颜色？随机扰动？
+  
+  54: add r0.yw, -r0.xxxx, r0.yyyw
+  55: mad r0.yw, cb0[5].xxxx, r0.yyyw, r0.xxxx // cb0_v5 = 0.8,1.5,1,0
+  56: mad r0.yw, cb0[5].yyyy, r0.yyyw, r1.zzzz
+  57: add r0.yw, r0.yyyw, l(0.0000, -0.9250, 0.0000, -0.9250)
+  58: add r0.yw, -abs(r0.yyyw), l(0.0000, 0.0060, 0.0000, 0.0040)
+  59: mul r0.yw, r0.yyyw, l(0.0000, 80.0000, 0.0000, 80.0000)
+  60: max r0.yw, r0.yyyw, l(0, 0, 0, 0)
+  61: mul r0.y, r0.y, l(0.7500)
+  // r0.yw = (0.75, 1)*max(0, ((0.006,0.004)-|((0.8*(r0.yw-r0.x)+r0.x)*1.5+(1-战雾权重) -0.925|)*80)
+  62: mad r1.w, cb0[5].y, r0.x, r1.z
+  63: add r1.w, r1.w, l(-0.9250)
+  64: add r1.w, -abs(r1.w), l(0.0100)
+  65: mul r1.w, r1.w, l(80.0000)
+  66: max r1.w, r1.w, l(0) // r1.w = max(0, (0.01-|1.5*r0.x+(1-战雾权重) - 0.925|)*80)
+  67: mad r0.y, r1.w, l(0.5000), r0.y
+  68: add r0.y, r0.w, r0.y
+  // pre: r0.xyw=原扰动sin*战雾权重-0.02*颜色
+  // r0.y = 0.5*max(0, (0.01-|r0.x*1.5+(1-战雾权重) - 0.925|)*80)
+  + 0.75*max(0, (0.006-|((0.8*(r0.y-r0.x)+r0.x)*1.5+(1-战雾权重) -0.925|)*80)
+  + 1*max(0, (0.004-|((0.8*(r0.w-r0.x)+r0.x)*1.5+(1-战雾权重) -0.925|)*80)
+  
+  69: add r0.w, r0.x, r1.z
+  70: add r0.w, r0.w, l(-0.9000) // r0.w = 原扰动sin*战雾权重.x+(1-战雾权重)-0.9
+  71: add r1.w, r0.x, l(1.0000) // r1.w = 原扰动sin*战雾权重.x + 1
+  72: mul r0.x, r0.x, l(10.0000) // r0.x = 原扰动sin*战雾权重.x * 10
+  73: mad r0.w, r1.w, l(0.1000), -abs(r0.w) // r0.w = (原扰动sin*战雾权重.x + 1)*0.1 - |原扰动sin*战雾权重.x+(1-战雾权重)-0.9|
+  74: mul_sat r0.zw, r0.zzzw, l(0.0000, 0.0000, 0.0005, 10.0000) // pre: r0.z是到Far的距离负数
+  // r0.z = saturate(到Far的距离负数 * 0.0005) // 不肯定是0吗？
+  // r0.w = saturate(((原扰动sin*战雾权重.x + 1)*0.1 - |原扰动sin*战雾权重.x+(1-战雾权重)-0.9|) * 10)
+  75: mad r0.y, r0.w, l(0.5000), r0.y
+  76: add r0.y, r0.y, l(0.0100)
+  // pre: r0.xyw=原扰动sin*战雾权重-0.02*颜色
+  // r0.y = 0.5*max(0, (0.01-|r0.x*1.5+(1-战雾权重) - 0.925|)*80)
+  + 0.75*max(0, (0.006-|((0.8*(r0.y-r0.x)+r0.x)*1.5+(1-战雾权重) -0.925|)*80)
+  + 1*max(0, (0.004-|((0.8*(r0.w-r0.x)+r0.x)*1.5+(1-战雾权重) -0.925|)*80)
+  + 0.5*saturate(((r0.x + 1)*0.1 - |r0.x+(1-战雾权重)-0.9|) * 10)
+  + 0.01
+  
+  // 世界空间normal
+  77: sample_l r5.xyzw, v0.xyxx, t2.xyzw, s0, l(0)
+  78: add r5.xyz, r5.xyzx, l(-0.5000, -0.5000, -0.5000, 0.0000)
+  79: add r5.xyz, r5.xyzx, r5.xyzx
+  80: mov_sat r0.w, r5.z // r0.w = saturate(世界空间normalz)
+  81: dp3 r1.w, -v1.xyzx, r5.xyzx
+  82: add_sat r1.w, -r1.w, l(1.0000)
+  
+  83: mul r0.y, r0.w, r0.y
+  84: mul r0.w, r0.y, r0.y
+  85: mul r0.y, r0.w, r0.y
+  86: lt r0.w, l(0.0100), r0.y // r0.w = ((r0.y*r0.w)^3 > 0.01)
+  87: mul r0.y, r0.y, cb0[4].w // cb0_v4 = (0,0,0,0.4) // r0.y *= 0.4;
+  88: lt r5.x, r3.x, l(0.5000) // prev: r3.x = saturate((世界z - (-250)+450)/450)^2
+  89: and r5.x, r5.x, l(1.0000) // r5.x = (saturate((世界z - (-250)+450)/450)^2 < 0.5) ? 1 : 0
+  90: movc r0.w, r0.w, l(0), r5.x
+  91: mul r5.xy, v1.xyxx, cb1[19].zzzz
+  92: div r5.xy, r5.xyxx, -v1.zzzz
+  93: add r5.yz, r5.xxyx, cb1[19].xxyx
+  94: div r5.w, cb1[25].y, cb1[25].x
+  95: mul r5.x, r5.w, r5.y
+  96: add r2.zw, r2.wwwz, -r5.xxxz
+  97: add r2.y, r2.y, l(1000.0000)
+  98: mul_sat r2.y, r2.y, l(0.0001)
+  99: mul r0.z, r0.z, r2.y
+ 100: mad r0.z, -r0.z, l(8.0000), l(1.0000)
+ 101: mad r2.yz, r2.zzwz, l(0.0000, 0.0500, 0.0500, 0.0000), r5.xxzx
+ 102: deriv_rty r2.w, r1.z // prev:r1.z 是 1-战雾权重
+ 103: mov r5.y, -r2.w
+ 104: deriv_rtx r5.x, r1.z
+ 105: mul r5.xy, r0.xxxx, r5.xyxx
+ 106: mad r2.yz, r2.yyzy, l(0.0000, 0.0003, 0.0003, 0.0000), r5.xxyx
+ 107: add r5.xy, v0.xyxx, l(-0.5000, -0.5000, 0.0000, 0.0000)
+ 108: mul r6.xz, r5.wwww, r5.xxxx
+ 109: dp2 r0.x, r5.xyxx, r5.xyxx
+ 110: sqrt r0.x, r0.x
+ 111: add r0.x, -r0.x, l(0.3500)
+ 112: max r0.x, r0.x, l(0)
+ 113: mul r0.x, r0.x, l(4.0000)
+ 114: mov r6.yw, v0.yyyy
+ 115: add r5.xyzw, r6.xyzw, l(0.5000, 0.0000, 0.5000, 0.0000)
+ 116: mad r5.xy, r5.xyxx, l(0.6000, 0.7500, 0.0000, 0.0000), -r2.yzyy
+ 117: mad r6.xy, r0.wwww, r5.xyxx, r2.yzyy
+ 118: mul r2.y, r6.x, l(8.0000)
+ 119: sincos r2.y, null, r2.y
+ 120: mad r6.z, r2.y, l(0.0040), r6.y
+ 121: mul r7.xyzw, l(-0.0150, 0.0000, -0.0050, 0.0000), cb1[21].wwww
+ 122: mad r2.yz, r6.xxzx, l(0.0000, 6.6000, 6.6000, 0.0000), r7.xxyx
+ 123: mad r5.xy, r6.xzxx, l(9.6000, 9.6000, 0.0000, 0.0000), r7.zwzz
+ 124: mad r7.zw, cb1[19].xxxy, l(0.0000, 0.0000, 0.0000, -0.0000), r5.xxxy
+ 125: mad r7.xy, cb1[19].xyxx, l(0.0000, -0.0000, 0.0000, 0.0000), r2.yzyy
+ 126: lt r2.y, l(0), r0.w
+ 127: mul r8.xyzw, l(0.0100, -0.0150, 0.0160, 0.0080), cb1[21].wwww
+ 128: mad r9.xy, r6.xzxx, l(6.6000, 6.6000, 0.0000, 0.0000), r8.zwzz
+ 129: mad r2.zw, r6.xxxz, l(0.0000, 0.0000, 4.0000, 4.0000), r8.xxxy
+ 130: mul r8.xyzw, l(-0.0250, -0.0025, -0.0300, 0.0000), cb1[21].wwww
+ 131: mad r9.zw, r6.xxxz, l(0.0000, 0.0000, 9.6000, 9.6000), r8.xxxy
+ 132: mad r5.xy, r6.xzxx, l(4.0000, 4.0000, 0.0000, 0.0000), r8.zwzz
+ 133: mad r5.xy, cb1[19].xyxx, l(0.0001, -0.0001, 0.0000, 0.0000), r5.xyxx
+ 134: movc r2.zw, r2.yyyy, r5.xxxy, r2.zzzw
+ 135: movc r6.xyzw, r2.yyyy, r7.xyzw, r9.xyzw
+ 136: sample_indexable r7.xyzw, r2.zwzz, t5.xyzw, s4
+ 137: sample_indexable r8.xyzw, r6.xyxx, t5.xyzw, s4
+ 138: sample_indexable r6.xyzw, r6.zwzz, t5.xyzw, s4
+ 139: add r2.y, r7.y, r8.y
+ 140: add r2.y, r6.y, r2.y
+ 141: add r2.y, r2.y, l(0.0010)
+ 142: log r2.y, r2.y
+ 143: add r2.z, r0.w, l(1.0000)
+ 144: mul r2.y, r2.y, r2.z
+ 145: exp r2.y, r2.y
+ 146: mul r2.z, r1.z, r1.z
+ 147: mul r2.y, r2.z, r2.y
+ 
+ 148: deriv_rtx r2.z, r4.x
+ 149: deriv_rty r2.w, r4.x
+ 150: add r2.z, abs(r2.w), abs(r2.z) // 场景亮度变化率
+ 151: mul r2.w, r2.z, r2.z
+ 152: mul r2.z, r2.w, r2.z
+ 153: mul r2.z, r2.z, l(20.0000) // 20*(场景亮度变化率^3)
+ 
+ 154: mul r2.w, r1.w, r1.w
+ 155: mul r2.w, r2.w, r2.w
+ 156: mad r1.w, r1.w, r2.w, r2.z
+ 157: add r2.z, -r1.w, l(0.0500)
+ 158: mad r1.w, r0.w, r2.z, r1.w
+ 159: mad r0.y, r0.y, l(40.0000), r1.w
+ 160: add r1.w, -cb0[6].w, cb0[7].x
+ 161: mad r1.w, r0.w, r1.w, cb0[6].w
+ 162: mad r0.w, r0.w, l(-0.2500), l(1.0000)
+ 163: mad r0.w, -cb0[7].z, r0.w, l(1.0000)
+ 164: mul r6.xyz, r1.wwww, cb0[6].xyzx
+ 165: mul r6.xyz, r0.yyyy, r6.xyzx
+ 166: mul r2.yzw, r2.yyyy, r6.xxyz
+ 167: add r0.y, -r0.w, l(1.0000)
+ 168: mad r0.x, r0.x, r0.y, r0.w
+ 169: mad r0.xyw, r2.yzyw, r0.xxxx, -r4.yzyw
+ 170: mad r0.xyw, r1.zzzz, r0.xyxw, r4.yzyw
+ 171: dp3 r1.w, r4.yzwy, l(0.3000, 0.5900, 0.1100, 0.0000)
+ 172: log r1.w, r1.w
+ 173: mul r1.w, r1.w, cb2[9].w
+ 174: exp r1.w, r1.w
+ 175: max r1.w, r1.w, l(0.5000)
+ 176: mul r2.yzw, r1.wwww, cb2[8].xxyz
+ 177: mad r2.yzw, r4.yyzw, cb2[9].zzzz, r2.yyzw
+ 178: mad r3.xyz, r3.yzwy, r3.xxxx, -r2.yzwy
+ 179: mul r1.xw, r1.xxxy, l(0.2500, 0.0000, 0.0000, 0.2500)
+ 180: lt r1.y, l(1.2000), r1.y
+ 181: mad r2.yzw, r1.xxxx, r3.xxyz, r2.yyzw
+ 182: mul r3.xyz, r1.wwww, r4.yzwy
+ 183: mad r3.xyz, r3.xyzx, l(0.0000, 0.0000, 1.0000, 0.0000), l(0.0000, 0.0000, 0.2000, 0.0000)
+ 184: and r1.xyw, r1.yyyy, r3.xyxz
+ 185: add r3.x, -cb0[7].w, l(1.0000)
+ 186: mul r2.yzw, r2.yyzw, r3.xxxx
+ 187: mad r0.xyw, r2.yzyw, r1.zzzz, r0.xyxw
+ 188: add r0.xyw, r1.xyxw, r0.xyxw
+ 189: add r1.xyz, -r0.xywx, l(1.0000, 1.0000, 1.0000, 0.0000)
+ 190: mul r2.yz, l(0.0000, 0.0000, -0.0000, 0.0000), cb1[19].xxyx
+ 191: mad r2.yz, r5.wwzw, l(0.0000, 1.0000, 0.8000, 0.0000), r2.zzyz
+ 192: add r2.yz, r2.yyzy, l(0.0000, -0.5000, -0.5000, 0.0000)
+ 
+ 193: mul r1.w, l(0.0300), cb1[21].w (g_flTime)
+ 194: sincos r3.x, r4.x, r1.w
+ 195: mul r3.xy, r2.yzyy, r3.xxxx // r3.xy = r2.yz * sin(0.03 * g_fTime)
+ 196: mul r2.yz, r2.zzyz, r4.xxxx // r2.yz = r2.zy * cos(0.03 * g_fTime)
+ 197: mul r3.xy, r3.xyxx, l(0.8000, 0.8000, 0.0000, 0.0000)
+ 198: mad r1.w, r2.y, l(0.5000), r3.x // r1.w = r2.z * cos(0.03 * g_fTime) * 0.5 + r2.y * sin(0.03 * g_fTime) * 0.8
+ 199: mad r2.y, r2.z, l(0.5000), -r3.y // r2.y = r2.y * cos(0.03 * g_fTime)*0.5 - r2.z * sin(0.03 * g_fTime) * 0.8
+ 200: add r3.y, r2.y, l(0.5000)
+ 201: add r3.x, r1.w, l(0.5000) // r3.xy = r2.zy*cos(0.03*g_fTime)*0.5 + r2.y-z*sin(0.03*g_fTime)*0.8 + 0.5
+ 
+ 202: sample_indexable r3.xyzw, r3.xyxx, t6.xyzw, s5 // r3.xyz = 用r3.xy采样波纹图
+ 203: log r2.yzw, r3.xxyz
+ 204: mul r2.yzw, r2.yyzw, l(0.0000, 1.5000, 1.5000, 1.5000)
+ 205: exp r2.yzw, r2.yyzw // r2.yzw = r3.xyz ^ 1.5
+ 206: mul r2.xyz, r2.xxxx, r2.yzwy
+ 207: mul r1.xyz, r1.xyzx, r2.xyzx // r1.xyz = r1.xyz * r2.x * (r3.xyz ^ 1.5)
+ 208: mad r0.xyw, r1.xyxz, l(0.2000, 0.2000, 0.0000, 0.2000), r0.xyxw
+ 209: mul o0.xyz, r0.zzzz, r0.xywx // rgb = r0.z * (r1.xyz*r2.x*(用r3.xy采样波纹图 ^ 1.5)*0.2 + r0.xyw)
+ 210: mov o0.w, l(1.0000)
+ 211: ret
